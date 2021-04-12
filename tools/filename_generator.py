@@ -26,7 +26,6 @@ def list_images_aflw2000(path):
 
 def list_images_300w_lp(path):
     result_filename = "300w_lp_%s.txt"
-    result = open(join(path, result_filename), "w")
     sub_folders = ['AFW', 'HELEN', 'LFPW', 'IBUG', 'AFW_Flip', 'HELEN_Flip', 'LFPW_Flip', 'IBUG_Flip']
     files = []
     for folder in sub_folders:

@@ -12,7 +12,7 @@ from ..utils.transforms import fliplr_joints, crop, generate_target, transform_p
 
 
 class DS_300W_LP(data.Dataset):
-    def __init__(self, cfg, is_train=True, transform=None):
+    def __init__(self, cfg, is_train=True, transform=None, return_pose=False):
         # specify annotation file for dataset
         if is_train:
             self.filenames = cfg.DATASET.TRAINSET
@@ -21,6 +21,7 @@ class DS_300W_LP(data.Dataset):
 
         self.is_train = is_train
         self.transform = transform
+        self.return_pose = return_pose
         self.data_root = cfg.DATASET.ROOT
         self.input_size = cfg.MODEL.IMAGE_SIZE
         self.output_size = cfg.MODEL.HEATMAP_SIZE
@@ -46,11 +47,12 @@ class DS_300W_LP(data.Dataset):
         self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
     def __len__(self):
-        return len(self.landmarks_frame)
+        return len(self.pose)
 
     def __getitem__(self, idx):
         image_path = self.images[idx]
-        pose = self.pose[idx]
+        if self.return_pose:
+            pose = self.pose[idx]
         x_min = math.floor(np.min(self.landmarks[idx][:, 0]))
         x_max = math.ceil(np.max(self.landmarks[idx][:, 0]))
         y_min = math.floor(np.min(self.landmarks[idx][:, 1]))
@@ -76,11 +78,13 @@ class DS_300W_LP(data.Dataset):
                 img = np.fliplr(img)
                 pts = fliplr_joints(pts, width=img.shape[1], dataset='300W')
                 center[0] = img.shape[1] - center[0]
-                # flips Euler angles:
-                pose[0], pose[2] = -pose[0], -pose[2]
+                if self.return_pose:
+                    # flips Euler angles:
+                    pose[0], pose[2] = -pose[0], -pose[2]
             if r != 0:
-                # rotates Euler angles:
-                pose[2] -= r
+                if self.return_pose:
+                    # rotates Euler angles:
+                    pose[2] -= r
 
         img = crop(img, center, scale, self.input_size, rot=r)
 
@@ -102,8 +106,9 @@ class DS_300W_LP(data.Dataset):
 
         meta = {'index': idx, 'center': center, 'scale': scale,
                 'pts': torch.Tensor(pts), 'tpts': tpts}
-
-        return img, target, pose, meta
+        if self.return_pose:
+            return img, target, pose, meta
+        return img, target, meta
 
 
 if __name__ == "__main__":
