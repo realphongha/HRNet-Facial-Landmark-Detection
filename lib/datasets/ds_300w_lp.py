@@ -49,7 +49,7 @@ class DS_300W_LP(data.Dataset):
         self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
     def __len__(self):
-        return len(self.pose)
+        return len(self.images)
 
     def __getitem__(self, idx):
         image_path = self.images[idx]

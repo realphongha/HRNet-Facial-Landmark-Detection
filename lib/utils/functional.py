@@ -28,3 +28,9 @@ def read_mat(mat_path, pt3d=False):
     roll = pose[2] * 180 / np.pi
 
     return np.array(landmarks), np.array((yaw, pitch, roll)), (x_min, y_min, x_max, y_max)
+
+
+def conv_98p_to_68p(l98):
+    # converts 98 points landmarks annotation to 68 points type
+    return np.array(l98[:33:2] + l98[33:38] + l98[42:47] + l98[51:60] +
+                    l98[60:62] + l98[63:66] + [l98[67]] + l98[68:70] + l98[71:74] + l98[75:96])

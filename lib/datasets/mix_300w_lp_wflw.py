@@ -7,7 +7,7 @@ import torch
 import torch.utils.data as data
 from PIL import Image
 
-from lib.utils.functional import read_mat
+from lib.utils.functional import read_mat, conv_98p_to_68p
 from ..utils.transforms import fliplr_joints, crop, generate_target, transform_pixel
 
 
@@ -47,13 +47,13 @@ class Mix300WLP_WFLW(data.Dataset):
                 file_path = os.path.join(self.data_root, filename)
                 self.images.append(file_path)
                 raw_landmarks = np.array(list(map(float, line[1:])))
-                self.landmarks.append(raw_landmarks.reshape((-1, 2)))
+                self.landmarks.append(conv_98p_to_68p(raw_landmarks.reshape((-1, 2))))
 
         self.mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
     def __len__(self):
-        return len(self.pose)
+        return len(self.images)
 
     def __getitem__(self, idx):
         image_path = self.images[idx]
