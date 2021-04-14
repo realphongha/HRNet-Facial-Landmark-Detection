@@ -97,4 +97,21 @@ class WFLW(data.Dataset):
 
 
 if __name__ == '__main__':
-    pass
+    from lib.config import config
+    test_ds = "300w_lp"
+    test_sample_range = range(100, 120)
+    config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\WFLW\data\data\wflw\face_landmarks_wflw_train.csv"
+    config.DATASET.ROOT = r"E:\Workspace\data\face-direction\WFLW\WFLW_images"
+    ds = WFLW(config)
+    for i in test_sample_range:
+        img, target, meta = ds[i]
+        img = img.transpose(1, 2, 0)
+        center = meta["center"].numpy()
+        marks = meta["tpts"].numpy()
+        marks *= 4.0
+        draw_marks(img, marks)
+        draw_point(img, center)
+        print(target)
+        print(meta)
+        cv2.imshow("Blah", img)
+        cv2.waitKey()

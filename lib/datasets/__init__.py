@@ -9,8 +9,9 @@ from .cofw import COFW
 from .face300w import Face300W
 from .wflw import WFLW
 from .ds_300w_lp import DS_300W_LP
+from .mix_300w_lp_wflw import Mix300WLP_WFLW
 
-__all__ = ['AFLW', 'COFW', 'Face300W', 'WFLW', 'get_dataset']
+__all__ = ['AFLW', 'COFW', 'Face300W', 'WFLW', 'DS_300W_LP', 'Mix300WLP_WFLW', 'get_dataset']
 
 
 def get_dataset(config):
@@ -25,6 +26,8 @@ def get_dataset(config):
         return WFLW
     elif config.DATASET.DATASET == '300W_LP':
         return DS_300W_LP
+    elif config.DATASET.DATASET == '300W_LP_WFLW':
+        return Mix300WLP_WFLW
     else:
         raise NotImplemented()
 

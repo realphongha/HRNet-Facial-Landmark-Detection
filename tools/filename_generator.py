@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(description="Generate a single file containing 
 parser.add_argument("--dat", dest="dat", type=str, help="Dataset name")
 parser.add_argument("--path", dest="path", type=str, help="Path to dataset")
 parser.add_argument("--split", action="store_true", default=False, help="Split or not?")
+parser.add_argument("--flip", action="store_true", default=False, help="Flip or not? (300W-LP)")
 args = parser.parse_args()
 
 
@@ -24,9 +25,10 @@ def list_images_aflw2000(path):
         result.close()
 
 
-def list_images_300w_lp(path):
+def list_images_300w_lp(path, flip):
     result_filename = "300w_lp_%s.txt"
-    sub_folders = ['AFW', 'HELEN', 'LFPW', 'IBUG', 'AFW_Flip', 'HELEN_Flip', 'LFPW_Flip', 'IBUG_Flip']
+    sub_folders = ['AFW', 'HELEN', 'LFPW', 'IBUG', 'AFW_Flip', 'HELEN_Flip', 'LFPW_Flip', 'IBUG_Flip'] if flip \
+        else ['AFW', 'HELEN', 'LFPW', 'IBUG']
     files = []
     for folder in sub_folders:
         sub_folder_path = os.path.join(path, folder)
@@ -58,13 +60,14 @@ def list_images_300w_lp(path):
                 result.close()
 
 
-def list_mix_300w_lp_aflw2000(path):
+def list_mix_300w_lp_aflw2000(path, flip):
     result_filename = "mix_%s.txt"
     path_300w_lp = join(path, "300W_LP")
     path_aflw2000 = join(path, "AFLW2000")
     files = []
 
-    sub_folders = ['AFW', 'HELEN', 'LFPW', 'IBUG', 'AFW_Flip', 'HELEN_Flip', 'LFPW_Flip', 'IBUG_Flip']
+    sub_folders = ['AFW', 'HELEN', 'LFPW', 'IBUG', 'AFW_Flip', 'HELEN_Flip', 'LFPW_Flip', 'IBUG_Flip'] if flip \
+        else ['AFW', 'HELEN', 'LFPW', 'IBUG']
     for folder in sub_folders:
         sub_folder_path = os.path.join(path_300w_lp, folder)
         dir_files = os.listdir(sub_folder_path)
@@ -96,12 +99,58 @@ def list_mix_300w_lp_aflw2000(path):
         result.close()
 
 
+def list_mix_300w_lp_wflw(path, flip, ratio=(8, 2, 0)):
+    result_filename = "mix_300wlp_wflw_%s.txt"
+    path_300w_lp = join(path, "300W_LP")
+    path_wflw = join(path, "WFLW/WFLW_annotations/list_98pt_rect_attr_train_test")
+    files = []
+
+    sub_folders = ['AFW', 'HELEN', 'LFPW', 'IBUG', 'AFW_Flip', 'HELEN_Flip', 'LFPW_Flip', 'IBUG_Flip'] if flip \
+        else ['AFW', 'HELEN', 'LFPW', 'IBUG']
+    for folder in sub_folders:
+        sub_folder_path = join(path_300w_lp, folder)
+        dir_files = os.listdir(sub_folder_path)
+        # only files with "_0.jpg" have right landmarks point:
+        filenames = [file for file in dir_files if file[-6:] == "_0.jpg"]
+        for filename in filenames:
+            files.append(join("300W_LP", join(folder, filename)))
+
+    dir_files = ["list_98pt_rect_attr_test.txt", "list_98pt_rect_attr_train.txt"]
+    for filename in dir_files:
+        file = open(os.path.join(path_wflw, filename), "r")
+        for line in file.read().splitlines():
+            line = line.split()
+            img_path = os.path.join("WFLW/WFLW_images", line[-1])
+            marks = line[:196]
+            line = [img_path]
+            line.extend(marks)
+            files.append(" ".join(line))
+        file.close()
+    random.shuffle(files)
+    train, test, validate = files[:int(len(files)*ratio[0]/10)], files[int(len(files)*ratio[0]/10):int(len(files)*(ratio[0]+ratio[1])/10)], \
+                            files[int(len(files)*(ratio[0]+ratio[1])/10):]
+    with open(join(path, result_filename % "train"), "w") as result:
+        for filename in train:
+            result.write(filename + "\n")
+        result.close()
+    with open(join(path, result_filename % "val"), "w") as result:
+        for filename in validate:
+            result.write(filename + "\n")
+        result.close()
+    with open(join(path, result_filename % "test"), "w") as result:
+        for filename in test:
+            result.write(filename + "\n")
+        result.close()
+
+
 if __name__ == "__main__":
     if args.dat.upper() == "AFLW2000":
         list_images_aflw2000(args.path)
     elif args.dat.upper() == "300W_LP":
-        list_images_300w_lp(args.path)
-    elif args.dat.upper() == "MIX":
-        list_mix_300w_lp_aflw2000(args.path)
+        list_images_300w_lp(args.path, args.flip)
+    elif args.dat.upper() == "MIX_300WLP_AFLW2000":
+        list_mix_300w_lp_aflw2000(args.path, args.flip)
+    elif args.dat.upper() == "MIX_300WLP_WFLW":
+        list_mix_300w_lp_wflw(args.path, args.flip)
     else:
         print("This type of dataset is not supported.")

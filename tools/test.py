@@ -58,6 +58,15 @@ def main():
 
     # load model
     state_dict = torch.load(args.model_file)
+    from collections import OrderedDict
+    new_state_dict = OrderedDict()
+    for k, v in state_dict.items():
+        if "module." in k:
+            name = k[7:]  # remove "module"
+        else:
+            name = k
+        new_state_dict[name] = v
+    state_dict = new_state_dict
     if 'state_dict' in state_dict.keys():
         state_dict = state_dict['state_dict']
         model.load_state_dict(state_dict)

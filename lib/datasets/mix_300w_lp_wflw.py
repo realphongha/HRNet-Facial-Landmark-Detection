@@ -11,8 +11,8 @@ from lib.utils.functional import read_mat
 from ..utils.transforms import fliplr_joints, crop, generate_target, transform_pixel
 
 
-class DS_300W_LP(data.Dataset):
-    def __init__(self, cfg, is_train=True, transform=None, return_pose=False):
+class Mix300WLP_WFLW(data.Dataset):
+    def __init__(self, cfg, is_train=True, transform=None):
         # specify annotation file for dataset
         if is_train:
             self.filenames = cfg.DATASET.TRAINSET
@@ -21,7 +21,6 @@ class DS_300W_LP(data.Dataset):
 
         self.is_train = is_train
         self.transform = transform
-        self.return_pose = return_pose
         self.data_root = cfg.DATASET.ROOT
         self.input_size = cfg.MODEL.IMAGE_SIZE
         self.output_size = cfg.MODEL.HEATMAP_SIZE
@@ -34,16 +33,21 @@ class DS_300W_LP(data.Dataset):
         # load annotations
         self.images = []
         self.landmarks = []
-        if self.return_pose:
-            self.pose = []
-        for filename in open(self.filenames, "r").read().splitlines():
-            file_path = os.path.join(self.data_root, filename)
-            mat_path = file_path.replace("jpg", "mat")
-            landmarks, pose, _ = read_mat(mat_path, pt3d=False)
-            self.images.append(file_path)
-            self.landmarks.append(landmarks)
-            if self.return_pose:
-                self.pose.append(pose)
+        for line in open(self.filenames, "r").read().splitlines():
+            if "300W_LP" in line:
+                filename = line
+                file_path = os.path.join(self.data_root, filename)
+                mat_path = file_path.replace("jpg", "mat")
+                landmarks, _, _ = read_mat(mat_path, pt3d=False)
+                self.images.append(file_path)
+                self.landmarks.append(landmarks)
+            elif "WFLW" in line:
+                line = line.split()
+                filename = line[0]
+                file_path = os.path.join(self.data_root, filename)
+                self.images.append(file_path)
+                raw_landmarks = np.array(list(map(float, line[1:])))
+                self.landmarks.append(raw_landmarks.reshape((-1, 2)))
 
         self.mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
@@ -53,8 +57,6 @@ class DS_300W_LP(data.Dataset):
 
     def __getitem__(self, idx):
         image_path = self.images[idx]
-        if self.return_pose:
-            pose = self.pose[idx]
         x_min = math.floor(np.min(self.landmarks[idx][:, 0]))
         x_max = math.ceil(np.max(self.landmarks[idx][:, 0]))
         y_min = math.floor(np.min(self.landmarks[idx][:, 1]))
@@ -108,8 +110,6 @@ class DS_300W_LP(data.Dataset):
 
         meta = {'index': idx, 'center': center, 'scale': scale,
                 'pts': torch.Tensor(pts), 'tpts': tpts}
-        if self.return_pose:
-            return img, target, pose, meta
         return img, target, meta
 
 
