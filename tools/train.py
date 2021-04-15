@@ -113,8 +113,12 @@ def main():
     for epoch in range(last_epoch, config.TRAIN.END_EPOCH):
         lr_scheduler.step()
 
-        function.train(config, train_loader, model, criterion,
-                       optimizer, epoch, writer_dict)
+        if config.MODEL.RETURN_POSE:
+            function.train_pose(config, train_loader, model, criterion,
+                           optimizer, epoch, writer_dict)
+        else:
+            function.train(config, train_loader, model, criterion,
+                           optimizer, epoch, writer_dict)
 
         # evaluate
         nme, predictions = function.validate(config, val_loader, model,

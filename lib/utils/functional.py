@@ -39,3 +39,16 @@ def conv_98p_to_68p(l98):
                51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 63, 64, 65, 67, 68, 69, 71, 72, 73, 75, 76, 77, 78, 79, 80,
                81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95]
     return l98[mapping] if len(l98.shape) == 2 else l98[:, mapping]
+
+def conv_68p_to_17p(landmarks):
+    mapping = [0, 4, 8, 12, 16, 17, 21, 22, 26, 27, 30, 31, 35, 36, 42, 60, 64]
+    if len(landmarks.shape) == 2:
+        l17 = landmarks[mapping]
+        l17[13] = (landmarks[36]+landmarks[39]) / 2
+        l17[14] = (landmarks[42]+landmarks[45]) / 2
+    else:
+        l17 = landmarks[:, mapping]
+        for i in range(l17.shape[0]):
+            l17[i][13] = (landmarks[i][36]+landmarks[i][39]) / 2
+            l17[i][14] = (landmarks[i][42]+landmarks[i][45]) / 2
+    return l17

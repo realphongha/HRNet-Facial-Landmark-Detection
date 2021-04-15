@@ -17,6 +17,8 @@ MODEL:
   NAME: 'hrnet'
   NUM_JOINTS: 68
   RETURN_POSE: true
+  POSE_POINTS: 68
+  POSE_PRETRAINED: ''
   INIT_WEIGHTS: true
   PRETRAINED: 'hrnetv2_pretrained/hrnetv2_w18_imagenet_pretrained.pth'
   SIGMA: 1.5
