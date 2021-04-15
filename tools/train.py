@@ -49,7 +49,7 @@ def main():
     cudnn.determinstic = config.CUDNN.DETERMINISTIC
     cudnn.enabled = config.CUDNN.ENABLED
 
-    model = models.get_face_alignment_net(config)
+    model = models.hrnet_pose(config) if config.MODEL.RETURN_POSE else models.get_face_alignment_net(config)
 
     # copy model files
     writer_dict = {
@@ -95,7 +95,7 @@ def main():
 
     train_loader = DataLoader(
         dataset=dataset_type(config,
-                             is_train=True),
+                             is_train=True, return_pose=config.MODEL.RETURN_POSE),
         batch_size=config.TRAIN.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=config.TRAIN.SHUFFLE,
         num_workers=config.WORKERS,
@@ -103,7 +103,7 @@ def main():
 
     val_loader = DataLoader(
         dataset=dataset_type(config,
-                             is_train=False),
+                             is_train=False, return_pose=config.MODEL.RETURN_POSE),
         batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=config.WORKERS,

@@ -15,6 +15,7 @@ import torch
 import numpy as np
 
 from .evaluation import decode_preds, compute_nme
+from lib.utils.functional import conv_98p_to_68p
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,65 @@ def train(config, train_loader, model, critertion, optimizer,
     nme = nme_batch_sum / nme_count
     msg = 'Train Epoch {} time:{:.4f} loss:{:.4f} nme:{:.4f}'\
         .format(epoch, batch_time.avg, losses.avg, nme)
+    logger.info(msg)
+
+
+def train_pose(config, train_loader, model, criterion, optimizer,
+          epoch, writer_dict):
+
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    losses = AverageMeter()
+
+    model.train()
+    mae_count = 0
+    mae_sum = 0
+
+    end = time.time()
+
+    for i, (inp, _, pose, meta) in enumerate(train_loader):
+        # measure data time
+        data_time.update(time.time()-end)
+
+        # compute the output
+        output = model(inp, meta)
+        pose = pose.cuda(non_blocking=True)
+
+        loss = criterion(output, pose)
+
+        # MAE
+        mae = torch.nn.L1Loss(size_average=True).cuda()(output, pose)
+        mae_sum += (mae * output.size(0))
+        mae_count +=  output.size(0)
+
+        # optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        losses.update(loss.item(), inp.size(0))
+
+        batch_time.update(time.time()-end)
+        if i % config.PRINT_FREQ == 0:
+            msg = 'Epoch: [{0}][{1}/{2}]\t' \
+                  'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
+                  'Speed {speed:.1f} samples/s\t' \
+                  'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
+                  'Loss {loss.val:.5f} ({loss.avg:.5f})\t'.format(
+                      epoch, i, len(train_loader), batch_time=batch_time,
+                      speed=inp.size(0)/batch_time.val,
+                      data_time=data_time, loss=losses)
+            logger.info(msg)
+
+            if writer_dict:
+                writer = writer_dict['writer']
+                global_steps = writer_dict['train_global_steps']
+                writer.add_scalar('train_loss', losses.val, global_steps)
+                writer_dict['train_global_steps'] = global_steps + 1
+
+        end = time.time()
+    msg = 'Train Epoch {} time:{:.4f} loss:{:.4f} mae:{:.4f}'\
+        .format(epoch, batch_time.avg, losses.avg, mae_sum/mae_count)
     logger.info(msg)
 
 

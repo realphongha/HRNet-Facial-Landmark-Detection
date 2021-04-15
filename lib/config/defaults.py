@@ -38,6 +38,9 @@ _C.MODEL.TARGET_TYPE = 'Gaussian'
 _C.MODEL.IMAGE_SIZE = [256, 256]  # width * height
 _C.MODEL.HEATMAP_SIZE = [64, 64]  # width * height
 _C.MODEL.SIGMA = 1.5
+_C.MODEL.RETURN_POSE = False
+_C.MODEL.POSE_POINT = 17
+_C.MODEL.POSE_PRETRAINED = ''
 _C.MODEL.EXTRA = CN()
 
 # High-Resoluion Net

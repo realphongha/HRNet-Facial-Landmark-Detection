@@ -10,5 +10,6 @@ from __future__ import division
 from __future__ import print_function
 
 from .hrnet import get_face_alignment_net, HighResolutionNet
+from .net2 import hrnet_pose, Net2
 
-__all__ = ['HighResolutionNet', 'get_face_alignment_net']
+__all__ = ['HighResolutionNet', 'get_face_alignment_net', 'hrnet_pose', 'Net2']
