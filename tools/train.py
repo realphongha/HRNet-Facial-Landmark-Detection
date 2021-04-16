@@ -49,6 +49,8 @@ def main():
     cudnn.determinstic = config.CUDNN.DETERMINISTIC
     cudnn.enabled = config.CUDNN.ENABLED
 
+    gpus = list(config.GPUS)
+
     model = models.hrnet_pose(config) if config.MODEL.RETURN_POSE else models.get_face_alignment_net(config)
 
     # copy model files
@@ -58,19 +60,19 @@ def main():
         'valid_global_steps': 0,
     }
 
-    gpus = list(config.GPUS)
     model = nn.DataParallel(model, device_ids=gpus).cuda()
 
     # loss
-    criterion = torch.nn.MSELoss(size_average=True).cuda()
+    criterion = torch.nn.MSELoss(reduction="mean").cuda()
 
     optimizer = utils.get_optimizer(config, model)
     best_nme = 100
     last_epoch = config.TRAIN.BEGIN_EPOCH
     if config.TRAIN.RESUME:
-        model_state_file = os.path.join(final_output_dir,
-                                        'latest.pth')
-        if os.path.islink(model_state_file):
+        checkpoint = 'latest.pth' if not config.TRAIN.CHECKPOINT else config.TRAIN.CHECKPOINT
+        model_state_file = os.path.join(final_output_dir, checkpoint)
+        print("Checkpoint file: %s" % model_state_file)
+        if os.path.isfile(model_state_file):
             checkpoint = torch.load(model_state_file)
             last_epoch = checkpoint['epoch']
             best_nme = checkpoint['best_nme']

@@ -15,7 +15,7 @@ class Net2(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(n * 2, n * 2),
         )
-        self.clf = nn.Sequential(
+        self.classifier = nn.Sequential(
             nn.Linear(n*2, n*8),
             nn.ReLU(inplace=True),
             nn.Dropout(0.2),
@@ -29,17 +29,28 @@ class Net2(nn.Module):
         # score_map = x.data
         x = torch.sum(x, dim=1)
         x = self.map_to_pts(x)
-        x = self.clf(x)
+        x = self.classifier(x)
         return x
 
 
 def hrnet_pose(config, **kwargs):
     hrnet = HighResolutionNet(config, **kwargs)
-    if kwargs["FREEZE_BACKBONE"]:
-        for param in hrnet.parameters():
-            param.requires_grad = False
+    if config["MODEL"]["FREEZE_BACKBONE"]:
+        for name, p in hrnet.named_parameters():
+            print("Freezing %s..." % name)
+            p.requires_grad = False
+        print("Froze HRNet's weights")
     pretrained = config.MODEL.PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
-    return Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
+    model = Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
+    if config["MODEL"]["FREEZE_CLF"]:
+        for name, p in model.named_parameters():
+            if "map_to_pts" in name or "classifier" in name:
+                print("Freezing %s..." % name)
+                p.requires_grad = False
+        print("Froze classifier weights")
+    return model
+
+
 
 
