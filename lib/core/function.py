@@ -124,14 +124,14 @@ def train_pose(config, train_loader, model, criterion, optimizer,
 
         # compute the output
         output = model(inp, meta)
-        pose = pose.cuda(non_blocking=True)
+        pose = pose.cuda(non_blocking=True).float()
 
         loss = criterion(output, pose)
 
         # MAE
         mae = torch.nn.L1Loss(size_average=True).cuda()(output, pose)
         mae_sum += (mae * output.size(0))
-        mae_count +=  output.size(0)
+        mae_count += output.size(0)
 
         # optimize
         optimizer.zero_grad()
@@ -228,6 +228,57 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
         writer_dict['valid_global_steps'] = global_steps + 1
 
     return nme, predictions
+
+
+def validate_pose(config, val_loader, model, criterion, epoch, writer_dict):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+
+    losses = AverageMeter()
+
+    num_classes = config.MODEL.NUM_JOINTS
+    predictions = torch.zeros((len(val_loader.dataset), num_classes, 2))
+
+    model.eval()
+
+    mae_count = 0
+    mae_sum = 0
+    end = time.time()
+
+    with torch.no_grad():
+        for i, (inp, _, pose, meta) in enumerate(val_loader):
+            data_time.update(time.time() - end)
+
+            # compute the output
+            output = model(inp, meta)
+            pose = pose.cuda(non_blocking=True).float()
+
+            loss = criterion(output, pose)
+
+            # MAE
+            mae = torch.nn.L1Loss(size_average=True).cuda()(output, pose)
+            mae_sum += (mae * output.size(0))
+            mae_count += output.size(0)
+
+            losses.update(loss.item(), inp.size(0))
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+    mae = mae_sum / mae_count
+
+    msg = 'Test Epoch {} time:{:.4f} loss:{:.4f} mae:{:.4f}'.format(epoch, batch_time.avg, losses.avg, mae)
+    logger.info(msg)
+
+    if writer_dict:
+        writer = writer_dict['writer']
+        global_steps = writer_dict['valid_global_steps']
+        writer.add_scalar('valid_loss', losses.avg, global_steps)
+        writer.add_scalar('valid_mae', mae, global_steps)
+        writer_dict['valid_global_steps'] = global_steps + 1
+
+    return mae, predictions
 
 
 def inference(config, data_loader, model):

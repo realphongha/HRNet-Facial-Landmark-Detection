@@ -4,12 +4,12 @@ PRINT_FREQ: 50
 
 DATASET:
   DATASET: 300W_LP
-  ROOT: '/content/data/300W_LP/'
-#  ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
-  TRAINSET: '/content/data/300W_LP/300w_lp_train.txt'
-#  TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train.txt'
-  TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
-#  TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test.txt'
+#  ROOT: '/content/data/300W_LP/'
+  ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
+#  TRAINSET: '/content/data/300W_LP/300w_lp_train.txt'
+  TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train.txt'
+#  TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
+  TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test.txt'
   FLIP: true
   SCALE_FACTOR: 0.25
   ROT_FACTOR: 30

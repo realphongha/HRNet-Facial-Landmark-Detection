@@ -116,13 +116,17 @@ def main():
         if config.MODEL.RETURN_POSE:
             function.train_pose(config, train_loader, model, criterion,
                            optimizer, epoch, writer_dict)
+            # evaluate
+            nme, predictions = function.validate_pose(config, val_loader, model,
+                                                 criterion, epoch, writer_dict)
         else:
             function.train(config, train_loader, model, criterion,
                            optimizer, epoch, writer_dict)
+            # evaluate
+            nme, predictions = function.validate(config, val_loader, model,
+                                                 criterion, epoch, writer_dict)
 
-        # evaluate
-        nme, predictions = function.validate(config, val_loader, model,
-                                             criterion, epoch, writer_dict)
+
 
         is_best = nme < best_nme
         best_nme = min(nme, best_nme)
@@ -146,13 +150,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-

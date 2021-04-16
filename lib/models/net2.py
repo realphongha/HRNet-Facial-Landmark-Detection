@@ -27,7 +27,7 @@ class Net2(nn.Module):
     def forward(self, x, meta):
         x = self.backbone(x)
         # score_map = x.data
-        x = torch.sum(x, dim=0)
+        x = torch.sum(x, dim=1)
         x = self.map_to_pts(x)
         x = self.clf(x)
         return x
@@ -37,6 +37,6 @@ def hrnet_pose(config, **kwargs):
     hrnet = HighResolutionNet(config, **kwargs)
     pretrained = config.MODEL.PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
-    return Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINT)
+    return Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
 
 
