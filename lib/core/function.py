@@ -129,7 +129,7 @@ def train_pose(config, train_loader, model, criterion, optimizer,
         loss = criterion(output, pose)
 
         # MAE
-        mae = torch.nn.L1Loss(size_average=True).cuda()(output, pose)
+        mae = torch.nn.L1Loss(reduction="mean").cuda()(output, pose)
         mae_sum += (mae * output.size(0))
         mae_count += output.size(0)
 
@@ -256,7 +256,7 @@ def validate_pose(config, val_loader, model, criterion, epoch, writer_dict):
             loss = criterion(output, pose)
 
             # MAE
-            mae = torch.nn.L1Loss(size_average=True).cuda()(output, pose)
+            mae = torch.nn.L1Loss(reduction="mean").cuda()(output, pose)
             mae_sum += (mae * output.size(0))
             mae_count += output.size(0)
 

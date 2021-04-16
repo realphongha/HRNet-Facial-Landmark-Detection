@@ -35,6 +35,9 @@ class Net2(nn.Module):
 
 def hrnet_pose(config, **kwargs):
     hrnet = HighResolutionNet(config, **kwargs)
+    if kwargs["FREEZE_BACKBONE"]:
+        for param in hrnet.parameters():
+            param.requires_grad = False
     pretrained = config.MODEL.PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
     return Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
