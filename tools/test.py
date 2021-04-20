@@ -51,7 +51,7 @@ def main():
     config.defrost()
     config.MODEL.INIT_WEIGHTS = False
     config.freeze()
-    model = models.get_face_alignment_net(config)
+    model = models.hrnet_pose(config) if config.MODEL.RETURN_POSE else models.get_face_alignment_net(config)
 
     gpus = list(config.GPUS)
     model = nn.DataParallel(model, device_ids=gpus).cuda()
@@ -68,7 +68,7 @@ def main():
         new_state_dict[name] = v
     state_dict = new_state_dict
     if 'state_dict' in state_dict.keys():
-        state_dict = state_dict['state_dict']
+        state_dict = state_dict['state_dict'].module
         model.load_state_dict(state_dict)
     else:
         model.module.load_state_dict(state_dict)
@@ -77,18 +77,19 @@ def main():
 
     test_loader = DataLoader(
         dataset=dataset_type(config,
-                             is_train=False),
+                             is_train=False, return_pose=config.MODEL.RETURN_POSE),
         batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=config.WORKERS,
         pin_memory=config.PIN_MEMORY
     )
-
-    nme, predictions = function.inference(config, test_loader, model)
+    if config.MODEL.RETURN_POSE:
+        nme, predictions = function.inference_pose(config, test_loader, model)
+    else:
+        nme, predictions = function.inference(config, test_loader, model)
 
     torch.save(predictions, os.path.join(final_output_dir, 'predictions.pth'))
 
 
 if __name__ == '__main__':
     main()
-

@@ -35,7 +35,7 @@ def list_images_300w_lp(path, aug, flip):
         sub_folder_path = os.path.join(path, folder)
         dir_files = os.listdir(sub_folder_path)
         # only files with "_0.jpg" have right landmarks point:
-        filenames = [file for file in dir_files] if aug else [file for file in dir_files if file[-6:] == "_0.jpg"]
+        filenames = [file for file in dir_files if file[-4:] == ".jpg"] if aug else [file for file in dir_files if file[-6:] == "_0.jpg"]
         for filename in filenames:
             files.append(folder + "/" + filename)
         if args.split:
@@ -73,7 +73,7 @@ def list_mix_300w_lp_aflw2000(path, aug, flip):
         sub_folder_path = os.path.join(path_300w_lp, folder)
         dir_files = os.listdir(sub_folder_path)
         # only files with "_0.jpg" have right landmarks point:
-        filenames = [file for file in dir_files] if aug else [file for file in dir_files if file[-6:] == "_0.jpg"]
+        filenames = [file for file in dir_files if file[-4:] == ".jpg"] if aug else [file for file in dir_files if file[-6:] == "_0.jpg"]
         for filename in filenames:
             files.append(join("300W_LP", join(folder, filename)))
             # result.write(join("300W_LP", join(folder, filename)) + "\n")
@@ -112,7 +112,7 @@ def list_mix_300w_lp_wflw(path, aug, flip, ratio=(8, 2, 0)):
         sub_folder_path = join(path_300w_lp, folder)
         dir_files = os.listdir(sub_folder_path)
         # only files with "_0.jpg" have right landmarks point:
-        filenames = [file for file in dir_files] if aug else [file for file in dir_files if file[-6:] == "_0.jpg"]
+        filenames = [file for file in dir_files if file[-4:] == ".jpg"] if aug else [file for file in dir_files if file[-6:] == "_0.jpg"]
         for filename in filenames:
             files.append(join("300W_LP", join(folder, filename)))
 

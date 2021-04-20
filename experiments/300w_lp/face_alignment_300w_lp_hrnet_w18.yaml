@@ -1,4 +1,4 @@
-GPUS: (1,)
+GPUS: (0,)
 WORKERS: 4
 PRINT_FREQ: 50
 
@@ -6,9 +6,9 @@ DATASET:
   DATASET: 300W_LP
 #  ROOT: '/content/data/300W_LP/'
   ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
-#  TRAINSET: '/content/data/300W_LP/300w_lp_train.txt'
+#  TRAINSET: '/content/data/300W_LP/300w_lp_train_aug.txt'
   TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train_aug.txt'
-#  TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
+#  TESTSET: '/content/data/300W_LP/300w_lp_test_aug.txt'
   TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test_aug.txt'
   FLIP: true
   SCALE_FACTOR: 0.25

@@ -333,4 +333,41 @@ def inference(config, data_loader, model):
     return nme, predictions
 
 
+def inference_pose(config, data_loader, model):
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    losses = AverageMeter()
 
+    num_classes = config.MODEL.NUM_JOINTS
+    predictions = torch.zeros((len(data_loader.dataset), 3))
+
+    model.eval()
+
+    mae_count = 0
+    mae_sum = 0
+    end = time.time()
+
+    with torch.no_grad():
+        for i, (inp, _, pose, meta) in enumerate(data_loader):
+            data_time.update(time.time() - end)
+            output = model(inp, meta)
+            pose = pose.cuda(non_blocking=True).float()
+
+            # MAE
+            mae = torch.nn.L1Loss(reduction="mean").cuda()(output, pose)
+            mae_sum += (mae * output.size(0))
+            mae_count += output.size(0)
+
+            for n in range(pose.size(0)):
+                predictions[meta['index'][n], :] = pose[n, :]
+
+            # measure elapsed time
+            batch_time.update(time.time() - end)
+            end = time.time()
+
+    mae = mae_sum/mae_count
+
+    msg = 'Test Results time:{:.4f} mae:{:.4f}'.format(batch_time.avg, mae)
+    logger.info(msg)
+
+    return mae, predictions
