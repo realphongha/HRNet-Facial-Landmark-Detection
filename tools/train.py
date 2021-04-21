@@ -69,10 +69,8 @@ def main():
     best_nme = 100
     last_epoch = config.TRAIN.BEGIN_EPOCH
     if config.TRAIN.RESUME:
-        if config.TRAIN.CHECKPOINT:
-            model_state_file = config.TRAIN.CHECKPOINT
-        else:
-            model_state_file = os.path.join(final_output_dir, "latest.pth")
+        checkpoint = "latest.pth" if not config.TRAIN.CHECKPOINT else config.TRAIN.CHECKPOINT
+        model_state_file = os.path.join(final_output_dir, checkpoint)
         print("Checkpoint file: %s" % model_state_file)
         if os.path.isfile(model_state_file):
             checkpoint = torch.load(model_state_file)
@@ -84,6 +82,23 @@ def main():
                   .format(checkpoint['epoch']))
         else:
             print("=> no checkpoint found")
+
+    if config.MODEL.PRETRAINED:
+        state_dict = torch.load(config.MODEL.PRETRAINED)
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            if "module." in k:
+                name = k[7:]  # remove "module"
+            else:
+                name = k
+            new_state_dict[name] = v
+        state_dict = new_state_dict
+        if 'state_dict' in state_dict.keys():
+            state_dict = state_dict['state_dict'].module
+            model.load_state_dict(state_dict)
+        else:
+            model.module.load_state_dict(state_dict)
 
     if isinstance(config.TRAIN.LR_STEP, list):
         lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(

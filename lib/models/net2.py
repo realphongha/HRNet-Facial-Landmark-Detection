@@ -55,7 +55,7 @@ def hrnet_pose(config, **kwargs):
     #         print("Freezing %s..." % name)
     #         p.requires_grad = False
     #     print("Froze HRNet's weights")
-    pretrained = config.MODEL.PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
+    pretrained = config.MODEL.BACKBONE_PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
     model = Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
     # if config["MODEL"]["FREEZE_CLF"]:
