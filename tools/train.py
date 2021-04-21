@@ -69,8 +69,10 @@ def main():
     best_nme = 100
     last_epoch = config.TRAIN.BEGIN_EPOCH
     if config.TRAIN.RESUME:
-        checkpoint = 'latest.pth' if not config.TRAIN.CHECKPOINT else config.TRAIN.CHECKPOINT
-        model_state_file = os.path.join(final_output_dir, checkpoint)
+        if config.TRAIN.CHECKPOINT:
+            model_state_file = config.TRAIN.CHECKPOINT
+        else:
+            model_state_file = os.path.join(final_output_dir, "latest.pth")
         print("Checkpoint file: %s" % model_state_file)
         if os.path.isfile(model_state_file):
             checkpoint = torch.load(model_state_file)
@@ -111,6 +113,9 @@ def main():
         num_workers=config.WORKERS,
         pin_memory=config.PIN_MEMORY
     )
+
+    # freezes weight:
+    model.freeze_weights(config.MODEL.FREEZE_BACKBONE, config.MODEL.FREEZE_CLF)
 
     for epoch in range(last_epoch, config.TRAIN.END_EPOCH):
         lr_scheduler.step()

@@ -32,23 +32,38 @@ class Net2(nn.Module):
         x = self.classifier(x)
         return x
 
+    def freeze_weights(self, freeze_backbone, freeze_clf):
+        if freeze_backbone:
+            for name, p in self.named_parameters():
+                if "backbone" in name:
+                    print("Freezing %s..." % name)
+                    p.requires_grad = False
+            print("Froze backbone weights")
+        elif freeze_clf:
+            for name, p in self.named_parameters():
+                if "map_to_pts" in name or "classifier" in name:
+                    print("Freezing %s..." % name)
+                    p.requires_grad = False
+            print("Froze classifier weights")
+
+
 
 def hrnet_pose(config, **kwargs):
     hrnet = HighResolutionNet(config, **kwargs)
-    if config["MODEL"]["FREEZE_BACKBONE"]:
-        for name, p in hrnet.named_parameters():
-            print("Freezing %s..." % name)
-            p.requires_grad = False
-        print("Froze HRNet's weights")
+    # if config["MODEL"]["FREEZE_BACKBONE"]:
+    #     for name, p in hrnet.named_parameters():
+    #         print("Freezing %s..." % name)
+    #         p.requires_grad = False
+    #     print("Froze HRNet's weights")
     pretrained = config.MODEL.PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
     model = Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
-    if config["MODEL"]["FREEZE_CLF"]:
-        for name, p in model.named_parameters():
-            if "map_to_pts" in name or "classifier" in name:
-                print("Freezing %s..." % name)
-                p.requires_grad = False
-        print("Froze classifier weights")
+    # if config["MODEL"]["FREEZE_CLF"]:
+    #     for name, p in model.named_parameters():
+    #         if "map_to_pts" in name or "classifier" in name:
+    #             print("Freezing %s..." % name)
+    #             p.requires_grad = False
+    #     print("Froze classifier weights")
     return model
 
 
