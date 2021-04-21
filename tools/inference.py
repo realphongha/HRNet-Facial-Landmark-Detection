@@ -63,16 +63,6 @@ def main():
     else:
         model.module.load_state_dict(state_dict)
 
-    dataset_type = get_dataset(config)
-
-    test_loader = DataLoader(
-        dataset=dataset_type(config,
-                             is_train=False, return_pose=config.MODEL.RETURN_POSE),
-        batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
-        shuffle=False,
-        num_workers=config.WORKERS,
-        pin_memory=config.PIN_MEMORY
-    )
     if args.img:
         if config.MODEL.RETURN_POSE:
             y, p, r = function.inference_img_pose(config, model, args)

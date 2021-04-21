@@ -125,7 +125,7 @@ def train_pose(config, train_loader, model, criterion, optimizer,
         data_time.update(time.time()-end)
 
         # compute the output
-        output = model(inp, meta)
+        output = model(inp)
         pose = pose.cuda(non_blocking=True).float()
 
         loss = criterion(output, pose)
@@ -252,7 +252,7 @@ def validate_pose(config, val_loader, model, criterion, epoch, writer_dict):
             data_time.update(time.time() - end)
 
             # compute the output
-            output = model(inp, meta)
+            output = model(inp)
             pose = pose.cuda(non_blocking=True).float()
 
             loss = criterion(output, pose)
@@ -352,7 +352,7 @@ def test_pose(config, data_loader, model):
     with torch.no_grad():
         for i, (inp, _, pose, meta) in enumerate(data_loader):
             data_time.update(time.time() - end)
-            output = model(inp, meta)
+            output = model(inp)
             pose = pose.cuda(non_blocking=True).float()
 
             # MAE
@@ -381,17 +381,21 @@ def process_img(raw_img):
     img = raw_img.astype(np.float32)
     img = (img / 255.0 - MEAN) / STD
     img = img.transpose([2, 0, 1])
-    return img
+    img = torch.Tensor(img)
+    return torch.unsqueeze(img, 0) # add batch dimension
 
 def inference_img_pose(config, model, args):
+    input_size = (config.MODEL.IMAGE_SIZE[0], config.MODEL.IMAGE_SIZE[1])
     raw_img = np.array(Image.open(args.img).convert('RGB'), dtype=np.float32)
+    raw_img = cv2.resize(raw_img, input_size)
     img = process_img(raw_img)
     model.eval()
     with torch.no_grad():
         output = model(img)
-        y, p, r = output.detach().cpu().numpy()
-    if args.show:
+        y, p, r = output.detach().cpu().numpy()[0]
+    if args.show or args.store:
         visualize.draw_axes_euler(raw_img, y, p, r)
+    if args.show:
         cv2.imshow("Result", raw_img)
         cv2.waitKey()
     if args.store:

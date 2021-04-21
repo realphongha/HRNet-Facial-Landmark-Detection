@@ -3,7 +3,7 @@
   PRINT_FREQ: 50
 
   DATASET:
-    DATASET: 300W_LP
+    DATASET: AFLW2000
     ROOT: '/content/data/AFLW2000/'
     TRAINSET: ''
     TESTSET: '/content/data/AFLW2000/aflw2000.txt'

@@ -24,7 +24,7 @@ class Net2(nn.Module):
             nn.Linear(n*2, n_classes),
         )
 
-    def forward(self, x, meta):
+    def forward(self, x):
         x = self.backbone(x)
         # score_map = x.data
         x = torch.sum(x, dim=1)
