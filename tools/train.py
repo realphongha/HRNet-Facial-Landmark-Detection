@@ -115,7 +115,7 @@ def main():
     )
 
     # freezes weight:
-    model.freeze_weights(config.MODEL.FREEZE_BACKBONE, config.MODEL.FREEZE_CLF)
+    model.module.freeze_weights(config.MODEL.FREEZE_BACKBONE, config.MODEL.FREEZE_CLF)
 
     for epoch in range(last_epoch, config.TRAIN.END_EPOCH):
         lr_scheduler.step()
