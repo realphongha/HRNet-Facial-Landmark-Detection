@@ -7,15 +7,17 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from PIL import Image
 
 import time
 import logging
 
 import torch
 import numpy as np
+import cv2
 
 from .evaluation import decode_preds, compute_nme
-from lib.utils.functional import conv_98p_to_68p
+from lib.utils import visualize
 
 logger = logging.getLogger(__name__)
 
@@ -281,7 +283,7 @@ def validate_pose(config, val_loader, model, criterion, epoch, writer_dict):
     return mae, predictions
 
 
-def inference(config, data_loader, model):
+def test(config, data_loader, model):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -333,7 +335,7 @@ def inference(config, data_loader, model):
     return nme, predictions
 
 
-def inference_pose(config, data_loader, model):
+def test_pose(config, data_loader, model):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -371,3 +373,27 @@ def inference_pose(config, data_loader, model):
     logger.info(msg)
 
     return mae, predictions
+
+MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
+def process_img(raw_img):
+    img = raw_img.astype(np.float32)
+    img = (img / 255.0 - MEAN) / STD
+    img = img.transpose([2, 0, 1])
+    return img
+
+def inference_img_pose(config, model, args):
+    raw_img = np.array(Image.open(args.img).convert('RGB'), dtype=np.float32)
+    img = process_img(raw_img)
+    model.eval()
+    with torch.no_grad():
+        output = model(img)
+        y, p, r = output.detach().cpu().numpy()
+    if args.show:
+        visualize.draw_axes_euler(raw_img, y, p, r)
+        cv2.imshow("Result", raw_img)
+        cv2.waitKey()
+    if args.store:
+        cv2.imwrite("output_inference/%d.jpg" % int(time.time()), raw_img)
+    return y, p, r

@@ -1,9 +1,3 @@
-# ------------------------------------------------------------------------------
-# Copyright (c) Microsoft
-# Licensed under the MIT License.
-# Created by Tianheng Cheng(tianhengcheng@gmail.com)
-# ------------------------------------------------------------------------------
-
 import os
 import pprint
 import argparse
@@ -16,7 +10,6 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import lib.models as models
 from lib.config import config, update_config
-from lib.utils import utils
 from lib.datasets import get_dataset
 from lib.core import function
 
@@ -28,6 +21,9 @@ def parse_args():
     parser.add_argument('--cfg', help='experiment configuration filename',
                         required=True, type=str)
     parser.add_argument('--model-file', help='model parameters', required=True, type=str)
+    parser.add_argument('--img', help='image path to be predicted', required=False, type=str)
+    parser.add_argument('--show', action="store_true", default=False, help="Show or not?")
+    parser.add_argument('--store', action="store_true", default=False, help="Store or not?")
 
     args = parser.parse_args()
     update_config(config, args)
@@ -37,12 +33,6 @@ def parse_args():
 def main():
 
     args = parse_args()
-
-    logger, final_output_dir, tb_log_dir = \
-        utils.create_logger(config, args.cfg, 'test')
-
-    logger.info(pprint.pformat(args))
-    logger.info(pprint.pformat(config))
 
     cudnn.benchmark = config.CUDNN.BENCHMARK
     cudnn.determinstic = config.CUDNN.DETERMINISTIC
@@ -83,12 +73,13 @@ def main():
         num_workers=config.WORKERS,
         pin_memory=config.PIN_MEMORY
     )
-    if config.MODEL.RETURN_POSE:
-        nme, predictions = function.test_pose(config, test_loader, model)
+    if args.img:
+        if config.MODEL.RETURN_POSE:
+            y, p, r = function.inference_img_pose(config, model, args)
+        else:
+            pass # not supported yet
     else:
-        nme, predictions = function.test(config, test_loader, model)
-
-    torch.save(predictions, os.path.join(final_output_dir, 'predictions.pth'))
+        pass # not supported yet
 
 
 if __name__ == '__main__':
