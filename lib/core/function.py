@@ -399,5 +399,7 @@ def inference_img_pose(config, model, args):
         cv2.imshow("Result", raw_img)
         cv2.waitKey()
     if args.store:
-        cv2.imwrite("output_inference/%d.jpg" % int(time.time()), raw_img)
+        filename = "output_inference/%d.jpg" % int(time.time())
+        cv2.imwrite(filename, raw_img)
+        print("Saving file to %s" % filename)
     return y, p, r

@@ -8,7 +8,7 @@ import torch.utils.data as data
 from PIL import Image
 
 from lib.utils.functional import read_mat
-from ..utils.transforms import fliplr_joints, crop, generate_target, transform_pixel
+from ..utils.transforms import fliplr_joints, crop, generate_target, transform_pixel, get_augmentation
 
 
 class DS_300W_LP(data.Dataset):
@@ -47,6 +47,7 @@ class DS_300W_LP(data.Dataset):
 
         self.mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         self.std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+        self.augmentation = get_augmentation(self.input_size)
 
     def __len__(self):
         return len(self.images)
@@ -68,7 +69,12 @@ class DS_300W_LP(data.Dataset):
 
         scale *= 1.25
         nparts = pts.shape[0]
-        img = np.array(Image.open(image_path).convert('RGB'), dtype=np.float32)
+        # img = np.array(Image.open(image_path).convert('RGB'), dtype=np.float32)
+        img = np.array(Image.open(image_path))
+
+        # augmentation:
+        if self.is_train and random.random() <= 0.5:
+            img = self.augmentation(image=img)["image"]
 
         r = 0
         if self.is_train:
@@ -83,10 +89,9 @@ class DS_300W_LP(data.Dataset):
                 if self.return_pose:
                     # flips Euler angles:
                     pose[0], pose[2] = -pose[0], -pose[2]
-            if r != 0:
-                if self.return_pose:
-                    # rotates Euler angles:
-                    pose[2] -= r
+            if self.return_pose:
+                # rotates Euler angles:
+                pose[2] -= r
 
         img = crop(img, center, scale, self.input_size, rot=r)
 
@@ -99,8 +104,10 @@ class DS_300W_LP(data.Dataset):
                                                scale, self.output_size, rot=r)
                 target[i] = generate_target(target[i], tpts[i] - 1, self.sigma,
                                             label_type=self.label_type)
+
         img = img.astype(np.float32)
-        img = (img / 255.0 - self.mean) / self.std
+        img = (img/255.0 - self.mean) / self.std
+
         img = img.transpose([2, 0, 1])
         target = torch.Tensor(target)
         tpts = torch.Tensor(tpts)
@@ -119,6 +126,9 @@ if __name__ == "__main__":
     from lib.utils.visualize import draw_axes_euler, draw_marks
     from lib.config import config
 
+    MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+    STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
     config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train.txt"
     config.DATASET.ROOT = r"E:\Workspace\data\face-direction\300W_LP"
     ds = DS_300W_LP(config, return_pose=True)
@@ -127,6 +137,8 @@ if __name__ == "__main__":
         print(ds.images[i])
         img, target, pose, meta = ds[i]
         img = img.transpose(1, 2, 0)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        # img = (img * STD + MEAN) * 255.0
         center = meta["center"].numpy()
         marks = meta["tpts"].numpy()
         marks *= 4.0

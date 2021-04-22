@@ -9,6 +9,9 @@ import torch
 import scipy
 import scipy.misc
 import numpy as np
+import albumentations
+import skimage
+from PIL import Image
 
 
 MATCHED_PARTS = {
@@ -175,7 +178,10 @@ def crop(img, center, scale, output_size, rot=0):
             return torch.zeros(output_size[0], output_size[1], img.shape[2]) \
                         if len(img.shape) > 2 else torch.zeros(output_size[0], output_size[1])
         else:
-            img = scipy.misc.imresize(img, [new_ht, new_wd])  # (0-1)-->(0-255)
+            img = skimage.transform.resize(img, (new_ht, new_wd), order=3)
+            # img = img.astype(dtype=np.uint8)
+            # img = np.array(Image.fromarray(img).resize((new_ht, new_wd)))
+            # img = scipy.misc.imresize(img, [new_ht, new_wd])  # (0-1)-->(0-255)
             center_new[0] = center_new[0] * 1.0 / sf
             center_new[1] = center_new[1] * 1.0 / sf
             scale = scale / sf
@@ -207,9 +213,13 @@ def crop(img, center, scale, output_size, rot=0):
 
     if not rot == 0:
         # Remove padding
-        new_img = scipy.misc.imrotate(new_img, rot)
+        new_img = skimage.transform.rotate(new_img, rot)
+        # new_img = scipy.misc.imrotate(new_img, rot)
         new_img = new_img[pad:-pad, pad:-pad]
-    new_img = scipy.misc.imresize(new_img, output_size)
+    new_img = skimage.transform.resize(new_img, output_size, order=3)
+    # new_img = new_img.astype(dtype=np.uint8)
+    # new_img = np.array(Image.fromarray(new_img).resize(output_size))
+    # new_img = scipy.misc.imresize(new_img, output_size)
     return new_img
 
 
@@ -244,6 +254,20 @@ def generate_target(img, pt, sigma, label_type='Gaussian'):
     img[img_y[0]:img_y[1], img_x[0]:img_x[1]] = g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
     return img
 
+def get_augmentation(img_size):
+    augmentation = albumentations.Compose([
+                                           albumentations.GaussNoise(var_limit=(5, 20), p=0.4),
+                                           albumentations.GaussianBlur(blur_limit=3, p=0.4),
+                                           albumentations.RandomBrightnessContrast(brightness_limit=(-0.2, 0.2),
+                                                                                   contrast_limit=(-0.2, 0.2), p=0.4),
+                                           albumentations.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=10,
+                                                                             val_shift_limit=10, p=0.4),
+                                           albumentations.CoarseDropout(max_holes=4, min_holes=1,
+                                                                        max_height=img_size[0]//5,
+                                                                        max_width=img_size[1]//5,
+                                                                        p=0.4)
+                                           ])
+    return augmentation
 
 
 

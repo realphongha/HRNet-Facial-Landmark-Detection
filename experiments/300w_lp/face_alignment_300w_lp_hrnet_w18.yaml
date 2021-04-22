@@ -1,25 +1,25 @@
-  GPUS: (0,)
+  GPUS: (0, 1)
   WORKERS: 4
   PRINT_FREQ: 50
 
   DATASET:
     DATASET: 300W_LP
-    ROOT: '/content/data/300W_LP/'
-  #  ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
-    TRAINSET: '/content/data/300W_LP/300w_lp_train.txt'
-  #  TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train_aug.txt'
-    TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
-  #  TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test_aug.txt'
+#    ROOT: '/content/data/300W_LP/'
+    ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
+#    TRAINSET: '/content/data/300W_LP/300w_lp_train.txt'
+    TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train_aug.txt'
+#    TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
+    TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test_aug.txt'
     FLIP: true
     SCALE_FACTOR: 0.25
-    ROT_FACTOR: 30
+    ROT_FACTOR: 60
   MODEL:
     NAME: 'hrnet'
     NUM_JOINTS: 68
     RETURN_POSE: true
     POSE_POINTS: 68
     POSE_PRETRAINED: ''
-    FREEZE_BACKBONE: true
+    FREEZE_BACKBONE: false
     FREEZE_CLF: false
     INIT_WEIGHTS: false # inits backbone weights with pretrained or not?
     BACKBONE_PRETRAINED: 'hrnetv2_pretrained/hrnetv2_w18_imagenet_pretrained.pth'

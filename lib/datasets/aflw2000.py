@@ -83,10 +83,10 @@ class AFLW2000(data.Dataset):
                 if self.return_pose:
                     # flips Euler angles:
                     pose[0], pose[2] = -pose[0], -pose[2]
-            if r != 0:
-                if self.return_pose:
-                    # rotates Euler angles:
-                    pose[2] -= r
+
+            if self.return_pose:
+                # rotates Euler angles:
+                pose[2] -= r
 
         img = crop(img, center, scale, self.input_size, rot=r)
 
