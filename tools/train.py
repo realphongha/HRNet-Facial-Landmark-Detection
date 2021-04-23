@@ -60,7 +60,8 @@ def main():
         'valid_global_steps': 0,
     }
 
-    model = nn.DataParallel(model, device_ids=gpus).cuda()
+    os.environ["CUDA_VISIBLE_DEVICES"] = ", ".join(list(map(str, gpus)))
+    model = nn.DataParallel(model, device_ids=list(range(len(gpus)))).cuda()
 
     # loss
     criterion = torch.nn.MSELoss(reduction="mean").cuda()

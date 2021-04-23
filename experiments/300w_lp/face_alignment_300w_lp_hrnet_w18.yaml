@@ -1,4 +1,4 @@
-  GPUS: (0, 1)
+  GPUS: (1, 2)
   WORKERS: 4
   PRINT_FREQ: 50
 
