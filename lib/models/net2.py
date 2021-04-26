@@ -2,12 +2,15 @@ import torch
 import torch.nn as nn
 from torch.nn import functional
 from .hrnet import HighResolutionNet
+from lib.utils.functional import mapping_function
 
 
 class Net2(nn.Module):
-    def __init__(self, backbone, n_points, n_classes=3):
+    def __init__(self, backbone, pose_points, output_backbone_points, n_classes=3):
         super().__init__()
-        n = n_points
+        n = pose_points
+        self.pose_points = pose_points
+        self.bb_points = output_backbone_points
         self.backbone = backbone
         self.map_to_pts = nn.Sequential(
             nn.Flatten(),
@@ -16,17 +19,22 @@ class Net2(nn.Module):
             nn.Linear(n * 2, n * 2),
         )
         self.classifier = nn.Sequential(
-            nn.Linear(n*2, n*8),
+            nn.Linear(n * 2, n * 8),
             nn.ReLU(inplace=True),
             nn.Dropout(0.2),
-            nn.Linear(n*8, n*2),
+            nn.Linear(n * 8, n * 2),
             nn.ReLU(inplace=True),
-            nn.Linear(n*2, n_classes),
+            nn.Linear(n * 2, n_classes),
         )
 
     def forward(self, x):
         x = self.backbone(x)
-        # score_map = x.data
+        if self.pose_points != self.bb_points:
+            try:
+                x = mapping_function[(self.bb_points, self.pose_points)](x)
+            except IndexError:
+                print("Mapping function between %d and %d points doesn't exist!")
+                quit()
         x = torch.sum(x, dim=1)
         x = self.map_to_pts(x)
         x = self.classifier(x)
@@ -57,7 +65,7 @@ def hrnet_pose(config, **kwargs):
     #     print("Froze HRNet's weights")
     pretrained = config.MODEL.BACKBONE_PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
-    model = Net2(backbone=hrnet, n_points=config.MODEL.POSE_POINTS)
+    model = Net2(backbone=hrnet, pose_points=config.MODEL.POSE_POINTS, output_backbone_points=config.MODEL.NUM_JOINTS)
     # if config["MODEL"]["FREEZE_CLF"]:
     #     for name, p in model.named_parameters():
     #         if "map_to_pts" in name or "classifier" in name:

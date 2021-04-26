@@ -85,6 +85,7 @@ def main():
             print("=> no checkpoint found")
 
     if config.MODEL.PRETRAINED:
+        print("Loading pretrained model from %s..." % config.MODEL.PRETRAINED)
         state_dict = torch.load(config.MODEL.PRETRAINED)
         from collections import OrderedDict
         new_state_dict = OrderedDict()
