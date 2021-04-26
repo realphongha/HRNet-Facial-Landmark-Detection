@@ -30,11 +30,7 @@ class Net2(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         if self.pose_points != self.bb_points:
-            try:
-                x = mapping_function[(self.bb_points, self.pose_points)](x)
-            except IndexError:
-                print("Mapping function between %d and %d points doesn't exist!")
-                quit()
+            x = mapping_function[(self.bb_points, self.pose_points)](x, batched=True)
         x = torch.sum(x, dim=1)
         x = self.map_to_pts(x)
         x = self.classifier(x)
