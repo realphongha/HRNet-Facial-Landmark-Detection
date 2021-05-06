@@ -1,22 +1,22 @@
-  GPUS: (1, 2)
+  GPUS: (0)
   WORKERS: 4
   PRINT_FREQ: 50
 
-  OUTPUT_DIR: 'output'
+  OUTPUT_DIR: '/content/drive/logging_colab/HRNet-Facial-Landmark-Detection'
 
   DATASET:
     DATASET: AFLW2000
-    ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/AFLW2000'
+    ROOT: '/content/data/AFLW2000/'
     TRAINSET: ''
     VALSET: ''
-    TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/AFLW2000/aflw2000.txt'
+    TESTSET: '/content/data/AFLW2000/aflw2000.txt'
     FLIP: true
     SCALE_FACTOR: 0.25
     ROT_FACTOR: 30
   MODEL:
     NAME: 'hrnet'
     NUM_JOINTS: 17
-    RETURN_POSE: true
+    RETURN_POSE: false
     POSE_PRETRAINED: ''
     FREEZE_BACKBONE: false
     FREEZE_CLF: false

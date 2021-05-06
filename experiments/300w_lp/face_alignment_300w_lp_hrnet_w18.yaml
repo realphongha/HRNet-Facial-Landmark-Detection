@@ -6,13 +6,9 @@
 
   DATASET:
     DATASET: 300W_LP
-#    ROOT: '/content/data/300W_LP/'
     ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
-#    TRAINSET: '/content/data/300W_LP/300w_lp_train_aug.txt'
     TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train_aug.txt'
-#    VALSET: '/content/data/300W_LP/300w_lp_val.txt'
     VALSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_val.txt'
-#    TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
     TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test.txt'
     FLIP: true
     SCALE_FACTOR: 0.25

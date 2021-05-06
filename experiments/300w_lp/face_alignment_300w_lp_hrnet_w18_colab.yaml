@@ -1,28 +1,32 @@
-  GPUS: (1, 2)
+  GPUS: (0)
   WORKERS: 4
   PRINT_FREQ: 50
 
-  OUTPUT_DIR: 'output'
+  OUTPUT_DIR: '/content/drive/logging_colab/HRNet-Facial-Landmark-Detection'
 
   DATASET:
-    DATASET: AFLW2000
-    ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/AFLW2000'
-    TRAINSET: ''
-    VALSET: ''
-    TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/AFLW2000/aflw2000.txt'
+    DATASET: 300W_LP
+    ROOT: '/content/data/300W_LP/'
+#    ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP'
+    TRAINSET: '/content/data/300W_LP/300w_lp_train_aug.txt'
+#    TRAINSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_train_aug.txt'
+    VALSET: '/content/data/300W_LP/300w_lp_val.txt'
+#    VALSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_val.txt'
+    TESTSET: '/content/data/300W_LP/300w_lp_test.txt'
+#    TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test.txt'
     FLIP: true
     SCALE_FACTOR: 0.25
-    ROT_FACTOR: 30
+    ROT_FACTOR: 60
   MODEL:
     NAME: 'hrnet'
     NUM_JOINTS: 17
-    RETURN_POSE: true
+    RETURN_POSE: false
     POSE_PRETRAINED: ''
     FREEZE_BACKBONE: false
     FREEZE_CLF: false
     INIT_WEIGHTS: false # inits backbone weights with pretrained or not?
     BACKBONE_PRETRAINED: 'hrnetv2_pretrained/hrnetv2_w18_imagenet_pretrained.pth'
-#    PRETRAINED: 'hrnetv2_pretrained/model_best.pth' # pretrained for whole model
+#    PRETRAINED: 'hrnetv2_pretrained/model_best_frz_backbone.pth' # pretrained for whole model
     PRETRAINED: ''
     SIGMA: 1.5
     IMAGE_SIZE:
