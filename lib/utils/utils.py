@@ -13,6 +13,7 @@ import os
 import logging
 import time
 from pathlib import Path
+from shutil import copyfile
 
 import torch
 import torch.optim as optim
@@ -90,7 +91,7 @@ def save_checkpoint(states, predictions, is_best,
     latest_path = os.path.join(output_dir, 'latest.pth')
     if os.path.islink(latest_path):
         os.remove(latest_path)
-    os.symlink(os.path.join(output_dir, filename), latest_path)
+    copyfile(os.path.join(output_dir, filename), latest_path)
 
     if is_best and 'state_dict' in states.keys():
         torch.save(states['state_dict'].state_dict(), os.path.join(output_dir, 'model_best.pth'))

@@ -77,14 +77,13 @@ def main():
             checkpoint = torch.load(model_state_file)
             last_epoch = checkpoint['epoch']
             best_nme = checkpoint['best_nme']
-            model.load_state_dict(checkpoint['state_dict'])
+            model = checkpoint['state_dict']
             optimizer.load_state_dict(checkpoint['optimizer'])
             print("=> loaded checkpoint (epoch {})"
                   .format(checkpoint['epoch']))
         else:
             print("=> no checkpoint found")
-
-    if config.MODEL.PRETRAINED:
+    elif config.MODEL.PRETRAINED:
         print("Loading pretrained model from %s..." % config.MODEL.PRETRAINED)
         state_dict = torch.load(config.MODEL.PRETRAINED)
         from collections import OrderedDict
