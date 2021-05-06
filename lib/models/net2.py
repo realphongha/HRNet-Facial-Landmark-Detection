@@ -1,37 +1,39 @@
 import torch
 import torch.nn as nn
-from torch.nn import functional
 from .hrnet import HighResolutionNet
-from lib.utils.functional import mapping_function
+from .debug import PrintLayer
 
 
 class Net2(nn.Module):
-    def __init__(self, backbone, pose_points, output_backbone_points, n_classes=3):
+    def __init__(self, backbone, n_points, n_classes=3):
         super().__init__()
-        n = pose_points
-        self.pose_points = pose_points
-        self.bb_points = output_backbone_points
         self.backbone = backbone
+        # self.map_to_pts = nn.Sequential(
+        #     nn.Flatten(),
+        #     nn.Linear(64 * 64, n_points * 2),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(n_points * 2, n_points * 2),
+        # )
         self.map_to_pts = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(64 * 64, n * 2),
+            nn.Conv2d(in_channels=n_points, out_channels=1, kernel_size=(3, 3), padding=1),
+            # PrintLayer("shape", True),
             nn.ReLU(inplace=True),
-            nn.Linear(n * 2, n * 2),
+            nn.Flatten(),
+            nn.Linear(64*64, n_points * 2),
+            nn.ReLU(inplace=True),
         )
         self.classifier = nn.Sequential(
-            nn.Linear(n * 2, n * 8),
+            nn.Linear(n_points * 2, n_points * 8),
             nn.ReLU(inplace=True),
             nn.Dropout(0.2),
-            nn.Linear(n * 8, n * 2),
+            nn.Linear(n_points * 8, n_points * 2),
             nn.ReLU(inplace=True),
-            nn.Linear(n * 2, n_classes),
+            nn.Linear(n_points * 2, n_classes),
         )
 
     def forward(self, x):
         x = self.backbone(x)
-        if self.pose_points != self.bb_points:
-            x = mapping_function[(self.bb_points, self.pose_points)](x, batched=True)
-        x = torch.sum(x, dim=1)
+        # x = torch.sum(x, dim=1)
         x = self.map_to_pts(x)
         x = self.classifier(x)
         return x
@@ -61,7 +63,7 @@ def hrnet_pose(config, **kwargs):
     #     print("Froze HRNet's weights")
     pretrained = config.MODEL.BACKBONE_PRETRAINED if config.MODEL.INIT_WEIGHTS else ''
     hrnet.init_weights(pretrained=pretrained)
-    model = Net2(backbone=hrnet, pose_points=config.MODEL.POSE_POINTS, output_backbone_points=config.MODEL.NUM_JOINTS)
+    model = Net2(backbone=hrnet, n_points=config.MODEL.NUM_JOINTS)
     # if config["MODEL"]["FREEZE_CLF"]:
     #     for name, p in model.named_parameters():
     #         if "map_to_pts" in name or "classifier" in name:

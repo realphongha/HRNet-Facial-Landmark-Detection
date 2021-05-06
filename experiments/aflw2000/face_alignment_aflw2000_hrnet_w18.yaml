@@ -1,26 +1,30 @@
-  GPUS: (0,)
+  GPUS: (1, 2)
   WORKERS: 4
   PRINT_FREQ: 50
 
+  OUTPUT_DIR: 'output'
+
   DATASET:
     DATASET: AFLW2000
-    ROOT: '/content/data/AFLW2000/'
+#    ROOT: '/content/data/AFLW2000/'
+    ROOT: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/AFLW2000'
     TRAINSET: ''
-    TESTSET: '/content/data/AFLW2000/aflw2000.txt'
+    VALSET: ''
+    TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/AFLW2000/aflw2000.txt'
     FLIP: true
     SCALE_FACTOR: 0.25
     ROT_FACTOR: 30
   MODEL:
     NAME: 'hrnet'
-    NUM_JOINTS: 68
+    NUM_JOINTS: 17
     RETURN_POSE: true
-    POSE_POINTS: 68
     POSE_PRETRAINED: ''
-    FREEZE_BACKBONE: true
+    FREEZE_BACKBONE: false
     FREEZE_CLF: false
     INIT_WEIGHTS: false # inits backbone weights with pretrained or not?
     BACKBONE_PRETRAINED: 'hrnetv2_pretrained/hrnetv2_w18_imagenet_pretrained.pth'
-    PRETRAINED: 'hrnetv2_pretrained/model_best.pth' # pretrained for whole model
+#    PRETRAINED: 'hrnetv2_pretrained/model_best.pth' # pretrained for whole model
+    PRETRAINED: ''
     SIGMA: 1.5
     IMAGE_SIZE:
       - 256

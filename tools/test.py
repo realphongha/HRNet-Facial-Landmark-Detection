@@ -54,7 +54,8 @@ def main():
     model = models.hrnet_pose(config) if config.MODEL.RETURN_POSE else models.get_face_alignment_net(config)
 
     gpus = list(config.GPUS)
-    model = nn.DataParallel(model, device_ids=gpus).cuda()
+    os.environ["CUDA_VISIBLE_DEVICES"] = ", ".join(list(map(str, gpus)))
+    model = nn.DataParallel(model, device_ids=list(range(len(gpus)))).cuda()
 
     # load model
     state_dict = torch.load(args.model_file)
@@ -77,7 +78,7 @@ def main():
 
     test_loader = DataLoader(
         dataset=dataset_type(config,
-                             is_train=False, return_pose=config.MODEL.RETURN_POSE),
+                             ds_type="test", return_pose=config.MODEL.RETURN_POSE),
         batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=config.WORKERS,

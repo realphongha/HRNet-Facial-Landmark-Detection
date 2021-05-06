@@ -345,8 +345,10 @@ def test_pose(config, data_loader, model):
 
     model.eval()
 
-    mae_count = 0
-    mae_sum = 0
+    sample_count = 0
+    mae_yaw = 0
+    mae_pitch = 0
+    mae_roll = 0
     end = time.time()
 
     with torch.no_grad():
@@ -356,9 +358,10 @@ def test_pose(config, data_loader, model):
             pose = pose.cuda(non_blocking=True).float()
 
             # MAE
-            mae = torch.nn.L1Loss(reduction="mean").cuda()(output, pose)
-            mae_sum += (mae * output.size(0))
-            mae_count += output.size(0)
+            mae_yaw += torch.nn.L1Loss(reduction="mean").cuda()(output[0], pose[0]) * output.size(0)
+            mae_pitch += torch.nn.L1Loss(reduction="mean").cuda()(output[1], pose[1]) * output.size(0)
+            mae_roll += torch.nn.L1Loss(reduction="mean").cuda()(output[2], pose[2]) * output.size(0)
+            sample_count += output.size(0)
 
             for n in range(pose.size(0)):
                 predictions[meta['index'][n], :] = pose[n, :]
@@ -367,9 +370,14 @@ def test_pose(config, data_loader, model):
             batch_time.update(time.time() - end)
             end = time.time()
 
-    mae = mae_sum/mae_count
+    mae_yaw /= sample_count
+    mae_pitch /= sample_count
+    mae_roll /= sample_count
+    mae = (mae_yaw + mae_pitch + mae_roll) / 3
 
-    msg = 'Test Results time:{:.4f} mae:{:.4f}'.format(batch_time.avg, mae)
+    msg = 'Test Results time:{:.4f}, yaw:{:.4f}, pitch:{:.4f}, roll:{:.4f}, mae:{:.4f}'.format(batch_time.avg,
+                                                                                               mae_yaw, mae_pitch,
+                                                                                               mae_roll, mae)
     logger.info(msg)
 
     return mae, predictions

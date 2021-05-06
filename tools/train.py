@@ -116,7 +116,7 @@ def main():
 
     train_loader = DataLoader(
         dataset=dataset_type(config,
-                             is_train=True, return_pose=config.MODEL.RETURN_POSE),
+                             ds_type="train", return_pose=config.MODEL.RETURN_POSE),
         batch_size=config.TRAIN.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=config.TRAIN.SHUFFLE,
         num_workers=config.WORKERS,
@@ -124,7 +124,7 @@ def main():
 
     val_loader = DataLoader(
         dataset=dataset_type(config,
-                             is_train=False, return_pose=config.MODEL.RETURN_POSE),
+                             ds_type="val", return_pose=config.MODEL.RETURN_POSE),
         batch_size=config.TEST.BATCH_SIZE_PER_GPU*len(gpus),
         shuffle=False,
         num_workers=config.WORKERS,
@@ -132,7 +132,8 @@ def main():
     )
 
     # freezes weight:
-    model.module.freeze_weights(config.MODEL.FREEZE_BACKBONE, config.MODEL.FREEZE_CLF)
+    if config.MODEL.RETURN_POSE:
+        model.module.freeze_weights(config.MODEL.FREEZE_BACKBONE, config.MODEL.FREEZE_CLF)
 
     for epoch in range(last_epoch, config.TRAIN.END_EPOCH):
         lr_scheduler.step()

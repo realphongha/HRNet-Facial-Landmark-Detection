@@ -17,14 +17,18 @@ from ..utils.transforms import fliplr_joints, crop, generate_target, transform_p
 
 
 class WFLW(data.Dataset):
-    def __init__(self, cfg, is_train=True, transform=None):
+    def __init__(self, cfg, ds_type="train", transform=None):
         # specify annotation file for dataset
-        if is_train:
+        if ds_type == "train":
             self.csv_file = cfg.DATASET.TRAINSET
-        else:
+        elif ds_type == "val":
+            self.csv_file = cfg.DATASET.VALSET
+        elif ds_type == "test":
             self.csv_file = cfg.DATASET.TESTSET
+        else:
+            raise NotImplementedError("Dataset type %s is not implemented!" % ds_type)
 
-        self.is_train = is_train
+        self.is_train = (ds_type == "train")
         self.transform = transform
         self.data_root = cfg.DATASET.ROOT
         self.input_size = cfg.MODEL.IMAGE_SIZE

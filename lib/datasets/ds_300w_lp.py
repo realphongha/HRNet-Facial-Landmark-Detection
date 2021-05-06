@@ -7,19 +7,23 @@ import torch
 import torch.utils.data as data
 from PIL import Image
 
-from lib.utils.functional import read_mat
+from lib.utils.functional import read_mat, mapping_function
 from ..utils.transforms import fliplr_joints, crop, generate_target, transform_pixel, get_augmentation
 
 
 class DS_300W_LP(data.Dataset):
-    def __init__(self, cfg, is_train=True, transform=None, return_pose=False):
+    def __init__(self, cfg, ds_type="train", transform=None, return_pose=False):
         # specify annotation file for dataset
-        if is_train:
+        if ds_type == "train":
             self.filenames = cfg.DATASET.TRAINSET
-        else:
+        elif ds_type == "val":
+            self.filenames = cfg.DATASET.VALSET
+        elif ds_type == "test":
             self.filenames = cfg.DATASET.TESTSET
+        else:
+            raise NotImplementedError("Dataset type %s is not implemented!" % ds_type)
 
-        self.is_train = is_train
+        self.is_train = (ds_type == "train")
         self.transform = transform
         self.return_pose = return_pose
         self.data_root = cfg.DATASET.ROOT
@@ -30,6 +34,7 @@ class DS_300W_LP(data.Dataset):
         self.rot_factor = cfg.DATASET.ROT_FACTOR
         self.label_type = cfg.MODEL.TARGET_TYPE
         self.flip = cfg.DATASET.FLIP
+        self.num_joints = cfg.MODEL.NUM_JOINTS
 
         # load annotations
         self.images = []
@@ -68,9 +73,14 @@ class DS_300W_LP(data.Dataset):
         pts = self.landmarks[idx]
 
         scale *= 1.25
-        nparts = pts.shape[0]
+        # nparts = pts.shape[0]
         # img = np.array(Image.open(image_path).convert('RGB'), dtype=np.float32)
         img = np.array(Image.open(image_path))
+
+        # shows image:
+        # if __name__ == "__main__":
+        #     cv2.imshow("Sample", cv2.imread(image_path))
+        #     cv2.waitKey()
 
         # augmentation:
         if self.is_train and random.random() <= 0.5:
@@ -95,10 +105,18 @@ class DS_300W_LP(data.Dataset):
 
         img = crop(img, center, scale, self.input_size, rot=r)
 
-        target = np.zeros((nparts, self.output_size[0], self.output_size[1]))
+        target = np.zeros((self.num_joints, self.output_size[0], self.output_size[1]))
+
+        if self.num_joints != 68:
+            if (68, self.num_joints) in mapping_function:
+                pts = mapping_function[(68, self.num_joints)](pts, False)
+            else:
+                raise NotImplementedError("Convert from 68 to %d landmark points is not supported!"
+                                          % self.num_joints)
+
         tpts = pts.copy()
 
-        for i in range(nparts):
+        for i in range(self.num_joints):
             if tpts[i, 1] > 0:
                 tpts[i, 0:2] = transform_pixel(tpts[i, 0:2] + 1, center,
                                                scale, self.output_size, rot=r)
@@ -131,6 +149,7 @@ if __name__ == "__main__":
 
     config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train.txt"
     config.DATASET.ROOT = r"E:\Workspace\data\face-direction\300W_LP"
+    config.MODEL.NUM_JOINTS = 17
     ds = DS_300W_LP(config, return_pose=True)
     test_sample_range = range(100, 120)
     for i in test_sample_range:
@@ -143,15 +162,16 @@ if __name__ == "__main__":
         marks = meta["tpts"].numpy()
         marks *= 4.0
         draw_marks(img, marks)
-        draw_axes_euler(img, pose[0], pose[1], pose[2], marks[33][0], marks[33][1])
+        # draw_axes_euler(img, pose[0], pose[1], pose[2], marks[33][0], marks[33][1])
+        draw_axes_euler(img, pose[0], pose[1], pose[2], marks[10][0], marks[10][1])
         # print(target)
         print("Angles: ", pose)
         # print(meta)
         cv2.imshow("Image", cv2.resize(img, (512, 512)))
         cv2.waitKey()
         # shows heatmap as a whole:
-        print(target.shape)
-        heatmap = target.sum(axis=0) * 0.1
-        print(heatmap.shape)
-        cv2.imshow("Heatmap", cv2.resize(heatmap.numpy(), (512, 512), interpolation=cv2.INTER_AREA))
-        cv2.waitKey()
+        # print(target.shape)
+        # heatmap = target.sum(axis=0) * 0.1
+        # print(heatmap.shape)
+        # cv2.imshow("Heatmap", cv2.resize(heatmap.numpy(), (512, 512), interpolation=cv2.INTER_AREA))
+        # cv2.waitKey()

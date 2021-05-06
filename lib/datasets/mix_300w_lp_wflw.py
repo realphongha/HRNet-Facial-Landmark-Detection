@@ -12,14 +12,18 @@ from ..utils.transforms import fliplr_joints, crop, generate_target, transform_p
 
 
 class Mix300WLP_WFLW(data.Dataset):
-    def __init__(self, cfg, is_train=True, transform=None):
+    def __init__(self, cfg, ds_type="train", transform=None):
         # specify annotation file for dataset
-        if is_train:
+        if ds_type == "train":
             self.filenames = cfg.DATASET.TRAINSET
-        else:
+        elif ds_type == "val":
+            self.filenames = cfg.DATASET.VALSET
+        elif ds_type == "test":
             self.filenames = cfg.DATASET.TESTSET
+        else:
+            raise NotImplementedError("Dataset type %s is not implemented!" % ds_type)
 
-        self.is_train = is_train
+        self.is_train = (ds_type == "train")
         self.transform = transform
         self.data_root = cfg.DATASET.ROOT
         self.input_size = cfg.MODEL.IMAGE_SIZE
@@ -57,6 +61,7 @@ class Mix300WLP_WFLW(data.Dataset):
 
     def __getitem__(self, idx):
         image_path = self.images[idx]
+        pose = self.pose[idx]
         x_min = math.floor(np.min(self.landmarks[idx][:, 0]))
         x_max = math.ceil(np.max(self.landmarks[idx][:, 0]))
         y_min = math.floor(np.min(self.landmarks[idx][:, 1]))
@@ -114,32 +119,4 @@ class Mix300WLP_WFLW(data.Dataset):
 
 
 if __name__ == "__main__":
-    import cv2
-    import numpy as np
-    from lib.utils.visualize import draw_axes_euler, draw_marks
-    from lib.config import config
-
-    config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train.txt"
-    config.DATASET.ROOT = r"E:\Workspace\data\face-direction\300W_LP"
-    ds = DS_300W_LP(config, return_pose=True)
-    test_sample_range = range(100, 120)
-    for i in test_sample_range:
-        print(ds.images[i])
-        img, target, pose, meta = ds[i]
-        img = img.transpose(1, 2, 0)
-        center = meta["center"].numpy()
-        marks = meta["tpts"].numpy()
-        marks *= 4.0
-        draw_marks(img, marks)
-        draw_axes_euler(img, pose[0], pose[1], pose[2], marks[33][0], marks[33][1])
-        # print(target)
-        print("Angles: ", pose)
-        # print(meta)
-        cv2.imshow("Image", cv2.resize(img, (512, 512)))
-        cv2.waitKey()
-        # shows heatmap as a whole:
-        print(target.shape)
-        heatmap = target.sum(axis=0) * 0.1
-        print(heatmap.shape)
-        cv2.imshow("Heatmap", cv2.resize(heatmap.numpy(), (512, 512), interpolation=cv2.INTER_AREA))
-        cv2.waitKey()
+    pass

@@ -45,7 +45,9 @@ def compute_nme(preds, meta):
 
     for i in range(N):
         pts_pred, pts_gt = preds[i, ], target[i, ]
-        if L == 19:  # aflw
+        if L == 17:
+            interocular = np.linalg.norm(pts_gt[13, ] - pts_gt[14, ])
+        elif L == 19:  # aflw
             interocular = meta['box_size'][i]
         elif L == 29:  # cofw
             interocular = np.linalg.norm(pts_gt[8, ] - pts_gt[9, ])
