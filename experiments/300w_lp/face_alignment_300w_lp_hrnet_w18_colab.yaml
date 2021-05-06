@@ -1,8 +1,8 @@
-  GPUS: (0)
+  GPUS: (0,)
   WORKERS: 4
   PRINT_FREQ: 50
 
-  OUTPUT_DIR: '/content/drive/logging_colab/HRNet-Facial-Landmark-Detection'
+  OUTPUT_DIR: '/content/drive/MyDrive/logging_colab/HRNet-Facial-Landmark-Detection'
 
   DATASET:
     DATASET: 300W_LP
