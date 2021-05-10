@@ -135,8 +135,6 @@ def main():
         model.module.freeze_weights(config.MODEL.FREEZE_BACKBONE, config.MODEL.FREEZE_CLF)
 
     for epoch in range(last_epoch, config.TRAIN.END_EPOCH):
-        lr_scheduler.step()
-
         if config.MODEL.RETURN_POSE:
             function.train_pose(config, train_loader, model, criterion,
                            optimizer, epoch, writer_dict)
@@ -149,8 +147,7 @@ def main():
             # evaluate
             nme, predictions = function.validate(config, val_loader, model,
                                                  criterion, epoch, writer_dict)
-
-
+        lr_scheduler.step()
 
         is_best = nme < best_nme
         best_nme = min(nme, best_nme)

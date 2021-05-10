@@ -17,7 +17,7 @@ from ..utils.transforms import fliplr_joints, crop, generate_target, transform_p
 
 
 class WFLW(data.Dataset):
-    def __init__(self, cfg, ds_type="train", transform=None):
+    def __init__(self, cfg, ds_type="train", transform=None, return_pose=False):
         # specify annotation file for dataset
         if ds_type == "train":
             self.csv_file = cfg.DATASET.TRAINSET
@@ -30,6 +30,7 @@ class WFLW(data.Dataset):
 
         self.is_train = (ds_type == "train")
         self.transform = transform
+        self.return_pose = return_pose
         self.data_root = cfg.DATASET.ROOT
         self.input_size = cfg.MODEL.IMAGE_SIZE
         self.output_size = cfg.MODEL.HEATMAP_SIZE
@@ -38,6 +39,7 @@ class WFLW(data.Dataset):
         self.rot_factor = cfg.DATASET.ROT_FACTOR
         self.label_type = cfg.MODEL.TARGET_TYPE
         self.flip = cfg.DATASET.FLIP
+        self.num_joints = cfg.MODEL.NUM_JOINTS
 
         # load annotations
         self.landmarks_frame = pd.read_csv(self.csv_file)

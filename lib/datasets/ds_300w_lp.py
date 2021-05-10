@@ -7,7 +7,7 @@ import torch
 import torch.utils.data as data
 from PIL import Image
 
-from lib.utils.functional import read_mat, mapping_function
+from lib.utils.functional import read_mat, read_landmarks, mapping_function
 from ..utils.transforms import fliplr_joints, crop, generate_target, transform_pixel, get_augmentation
 
 
@@ -42,9 +42,12 @@ class DS_300W_LP(data.Dataset):
         if self.return_pose:
             self.pose = []
         for filename in open(self.filenames, "r").read().splitlines():
-            file_path = os.path.join(self.data_root, filename)
+            file_path = os.path.join(self.data_root, filename + ".jpg")
             mat_path = file_path.replace("jpg", "mat")
-            landmarks, pose, _ = read_mat(mat_path, pt3d=False)
+            lm_path = os.path.join(self.data_root, "landmarks")
+            lm_path = os.path.join(lm_path, filename + "_pts.mat")
+            _, pose, _ = read_mat(mat_path, pt3d=False)
+            landmarks = read_landmarks(lm_path, pt3d=False)
             self.images.append(file_path)
             self.landmarks.append(landmarks)
             if self.return_pose:
@@ -147,10 +150,11 @@ if __name__ == "__main__":
     MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
     STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-    config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train.txt"
+    config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train_aug.txt"
+    config.DATASET.VALSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train_aug.txt"
     config.DATASET.ROOT = r"E:\Workspace\data\face-direction\300W_LP"
-    config.MODEL.NUM_JOINTS = 17
-    ds = DS_300W_LP(config, return_pose=True)
+    config.MODEL.NUM_JOINTS = 68
+    ds = DS_300W_LP(config, return_pose=True, ds_type="train")
     test_sample_range = range(100, 120)
     for i in test_sample_range:
         print(ds.images[i])

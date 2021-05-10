@@ -254,6 +254,7 @@ def generate_target(img, pt, sigma, label_type='Gaussian'):
     img[img_y[0]:img_y[1], img_x[0]:img_x[1]] = g[g_y[0]:g_y[1], g_x[0]:g_x[1]]
     return img
 
+
 def get_augmentation(img_size):
     augmentation = albumentations.Compose([
                                            albumentations.GaussNoise(var_limit=(5, 20), p=0.4),

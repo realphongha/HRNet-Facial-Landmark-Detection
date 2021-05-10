@@ -5,7 +5,7 @@ import scipy.io as sio
 
 
 def read_mat(mat_path, pt3d=False):
-    # Get facebox, 2D landmarks and Euler angles from .mat files
+    # Get facebox, landmarks and Euler angles from .mat files
     mat = sio.loadmat(mat_path)
     if pt3d:
         pt = mat['pt3d_68']
@@ -28,6 +28,16 @@ def read_mat(mat_path, pt3d=False):
     roll = pose[2] * 180 / np.pi
 
     return np.array(landmarks), np.array((yaw, pitch, roll)), (x_min, y_min, x_max, y_max)
+
+
+def read_landmarks(mat_path, pt3d=False):
+    # Get landmarks from .mat files (augmented 300W_LP images)
+    mat = sio.loadmat(mat_path)
+    if pt3d:
+        lm = mat['pts_3d']
+    else:
+        lm = mat['pts_2d']
+    return lm
 
 
 def conv_98p_to_68p(l98, batched=False):

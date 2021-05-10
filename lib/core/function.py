@@ -65,15 +65,14 @@ def train(config, train_loader, model, critertion, optimizer,
         output = model(inp)
         target = target.cuda(non_blocking=True)
 
+        score_map = output.data.cpu()
         loss = critertion(output, target)
 
-        # NME
-        score_map = output.data.cpu()
         preds = decode_preds(score_map, meta['center'], meta['scale'], [64, 64])
 
         nme_batch = compute_nme(preds, meta)
-        nme_batch_sum = nme_batch_sum + np.sum(nme_batch)
-        nme_count = nme_count + preds.size(0)
+        nme_batch_sum += np.sum(nme_batch)
+        nme_count += preds.size(0)
 
         # optimize
         optimizer.zero_grad()
@@ -203,7 +202,7 @@ def validate(config, val_loader, model, criterion, epoch, writer_dict):
             count_failure_010 += failure_010
 
             nme_batch_sum += np.sum(nme_temp)
-            nme_count = nme_count + preds.size(0)
+            nme_count += preds.size(0)
             for n in range(score_map.size(0)):
                 predictions[meta['index'][n], :, :] = preds[n, :, :]
 
