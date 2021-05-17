@@ -36,10 +36,14 @@ def list_images_300w_lp(args):
         dir_files = os.listdir(sub_folder_path)
         # only files with "_0.jpg" have right landmarks point:
         filenames = [file for file in dir_files if file[-4:] == ".jpg"]
-        if args.shuffle:
-            random.shuffle(filenames)
         for filename in filenames:
             files.append(folder + "/" + filename[:-4])
+    if args.shuffle:
+        random.shuffle(files)
+    with open(join(args.path, "300w_lp.txt"), "w") as result:
+        for filename in files:
+            result.write(filename + "\n")
+        result.close()
     if args.split:
         result_filename_aug = "300w_lp_%s_aug.txt"
         result_filename = "300w_lp_%s.txt"

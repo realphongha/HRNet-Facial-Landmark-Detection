@@ -94,8 +94,8 @@ class DS_300W_LP(data.Dataset):
             scale = scale * (random.uniform(1 - self.scale_factor,
                                             1 + self.scale_factor))
             r = random.uniform(-self.rot_factor, self.rot_factor) \
-                if random.random() <= 0.6 else 0
-            if random.random() <= 0.5 and self.flip:
+                if random.random() <= 0.6 and self.is_train else 0
+            if random.random() <= 0.5 and self.flip and self.is_train:
                 img = np.fliplr(img)
                 pts = fliplr_joints(pts, width=img.shape[1], dataset='300W')
                 center[0] = img.shape[1] - center[0]
@@ -150,11 +150,11 @@ if __name__ == "__main__":
     MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
     STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-    config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train_aug.txt"
-    config.DATASET.VALSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_train_aug.txt"
+    config.DATASET.TRAINSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_samples.txt"
+    config.DATASET.VALSET = r"E:\Workspace\data\face-direction\300W_LP\300w_lp_samples.txt"
     config.DATASET.ROOT = r"E:\Workspace\data\face-direction\300W_LP"
-    config.MODEL.NUM_JOINTS = 68
-    ds = DS_300W_LP(config, return_pose=True, ds_type="train")
+    config.MODEL.NUM_JOINTS = 17
+    ds = DS_300W_LP(config, return_pose=True, ds_type="val")
     test_sample_range = range(100, 120)
     for i in test_sample_range:
         print(ds.images[i])
@@ -174,8 +174,8 @@ if __name__ == "__main__":
         cv2.imshow("Image", cv2.resize(img, (512, 512)))
         cv2.waitKey()
         # shows heatmap as a whole:
-        # print(target.shape)
-        # heatmap = target.sum(axis=0) * 0.1
-        # print(heatmap.shape)
-        # cv2.imshow("Heatmap", cv2.resize(heatmap.numpy(), (512, 512), interpolation=cv2.INTER_AREA))
-        # cv2.waitKey()
+        print(target.shape)
+        heatmap = target.sum(axis=0) * 0.1
+        print(heatmap.shape)
+        cv2.imshow("Heatmap", cv2.resize(heatmap.numpy(), (512, 512), interpolation=cv2.INTER_AREA))
+        cv2.waitKey()

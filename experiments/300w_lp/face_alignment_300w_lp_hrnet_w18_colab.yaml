@@ -1,6 +1,6 @@
   GPUS: (0,)
   WORKERS: 2
-  PRINT_FREQ: 50
+  PRINT_FREQ: 500
 
   OUTPUT_DIR: '/content/drive/MyDrive/logging_colab/HRNet-Facial-Landmark-Detection'
 
@@ -16,7 +16,7 @@
 #    TESTSET: '/mnt/hdd10tb/Users/phonghh/data/FaceDirection/300W_LP/300w_lp_test_aug.txt'
     FLIP: true
     SCALE_FACTOR: 0.25
-    ROT_FACTOR: 60
+    ROT_FACTOR: 30
   MODEL:
     NAME: 'hrnet'
     NUM_JOINTS: 17
@@ -80,13 +80,13 @@
     BATCH_SIZE_PER_GPU: 16
     SHUFFLE: true
     BEGIN_EPOCH: 0
-    END_EPOCH: 60
+    END_EPOCH: 30
     RESUME: false
     CHECKPOINT: 'latest.pth'
     OPTIMIZER: 'adam'
     LR: 0.0001
     WD: 0.0
-    LR_STEP: [30, 50]
+    LR_STEP: [15, 25]
     MOMENTUM: 0.0
     NESTEROV: false
   TEST:
